@@ -2,8 +2,7 @@
 This a self-designed game of 'The Werewolves of Miller's Hollow' for remote players on PC.
 
 ******IMPORTANT*******
-1. AT PRESENT, IN DEVELOPING STAGE, THIS SOFTWARE ONLY SERVERS CERTAIN PEOPLE. PLEASE CONTACT ME BEFORE USING OR IT WILL NOT RUN PROPERLY.
-2. NOT FINISHED, NOW CAMPAIGN FOR SHERIFF.
+NOT FINISHED, CHECK HERE () FOR LATEST NEWS.
 ******IMPORTANT*******
 
 1. Install python by clicking "python-2.7.12.msi".
