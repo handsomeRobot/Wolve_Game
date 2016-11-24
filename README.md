@@ -2,7 +2,7 @@
 This a self-designed game of 'The Werewolves of Miller's Hollow' for remote players on PC.
 
 ******IMPORTANT*******
-NOT FINISHED, CHECK HERE () FOR LATEST NEWS.
+NOT FINISHED, CHECK HERE (https://handsomerobot.github.io/Wolve_Game/news/) FOR LATEST NEWS.
 ******IMPORTANT*******
 
 1. Install python by clicking "python-2.7.12.msi".
