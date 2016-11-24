@@ -11,7 +11,7 @@ class WolfGame(ConnectionListener):
     def __init__(self):
         self.players = []
         self.candidate = []
-        self.playerPhoto = {'xukang': 'xukang.jpg', 'panfeng': 'panfeng.jpg'}
+        self.playerPhoto = {'xukang': 'Resources/xukang.jpg', 'panfeng': 'Resources/panfeng.jpg'}
         self.playerPos = {}
         self.name = "NA"
         self.role = "NA"
