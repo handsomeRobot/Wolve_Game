@@ -18,6 +18,7 @@ class WolfGame(ConnectionListener):
         self.connecting = False
         self.start_game = False
         self.nominate = False
+        self.daytime = "Day"
         self.timer_last = 'NA'
         self.timer_start = 'NA'
         self.width, self.height = 800, 600
@@ -65,10 +66,11 @@ class WolfGame(ConnectionListener):
         pygame.font.init()
         #intilize conncetion with server.py
         self.Connect()
-        print "Connected to server."
+        print "Connected to server."    
         print "Please input your name: "
         #set and send to server player name
         self.name = raw_input()
+        self.nomination = self.name
         self.connecting = True
         #initilize the screen
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
@@ -101,12 +103,22 @@ class WolfGame(ConnectionListener):
     # remove choice
     def Network_Deactivate(self, data):
         self.choice = False
-        self.hint2 = 'Choose your love and enter.'
+        # put the candidates in the first col
+        if self.nominate:
+            self.nominate = False
+            for player in self.players:
+                self.playerPos[player] = "NA"  
+                if player in self.candidate:
+                    pos_x = 0
+                    pos_y = self.candidate.index(player) / self.xNum
+                    self.playerPos[player] = [pos_x, pos_y]
+        self.hint2 = 'Please vote.'
         
     # add candidate
-    def Network_Candidate(self, data):
+    def Network_Nominate(self, data):
+        name = data["name"]
+        print "get name", name
         self.candidate.append(name)
-        
     
     def resize(self, graph, destSize):
         size = graph.get_rect().size
@@ -256,7 +268,8 @@ class WolfGame(ConnectionListener):
             for player in self.players:
                 photo = pygame.image.load(self.playerPhoto[player])
                 photo = self.resize(graph = photo, destSize = self.destPhotoSize)
-                self.drawPhoto(photo, pos = self.playerPos[player])
+                if self.playerPos[player] != "NA":
+                    self.drawPhoto(photo, pos = self.playerPos[player])
             #get the position of mouse
             mouse = pygame.mouse.get_pos()
             #trace the mouse coords in the publicArea
@@ -270,10 +283,10 @@ class WolfGame(ConnectionListener):
                     mousePosy = int(mouse[1] / (self.rects[0][0][1])) 
                     mousePos = [mousePosx, mousePosy]
                 #record the press of the mouse
-                if pygame.mouse.get_pressed()[0]:
-                       self.coordSelected[mousePos[0]][mousePos[1]] = True
-                elif pygame.mouse.get_pressed()[2]: 
-                       self.coordSelected[mousePos[0]][mousePos[1]] = False
+                if pygame.mouse.get_pressed()[0] and [mousePos[0], mousePos[1]] in self.playerPos.values():
+                    self.coordSelected[mousePos[0]][mousePos[1]] = True
+                elif pygame.mouse.get_pressed()[2]and [mousePos[0], mousePos[1]] in self.playerPos.values(): 
+                    self.coordSelected[mousePos[0]][mousePos[1]] = False
                 #draw the squares
                 for i in range(self.xNum):
                     for j in range(self.yNum):
@@ -281,6 +294,14 @@ class WolfGame(ConnectionListener):
                             self.drawSquare(pos = [i, j], selected = False)
                         elif self.coordSelected[i][j] == True:
                             self.drawSquare(pos = [i, j], selected = True)
+                #choose the targeted player 
+                if self.nominate and self.choice:
+                    for i in range(self.xNum):
+                        for j in range(self.yNum):
+                            if self.coordSelected[i][j]:
+                                for name, pos in self.playerPos.items():
+                                    if pos == [i, j]:
+                                        self.nomination = name
             #trace the mouse for the button
             #if mouse is in the button area
             if ((self.publicWidth - self.actButton.get_rect().size[0]) < mouse[0] and mouse[0] < self.width \
@@ -290,9 +311,9 @@ class WolfGame(ConnectionListener):
                     if not self.start_game:
                         self.Send({'action': 'Launch', 'player_name': self.name})
                     elif self.nominate:
-                        self.Send({'action': 'Nominate', 'player_name': self.name})
+                        self.Send({'action': 'Nominate', 'player_name': self.nomination})
                         self.choice = False
-                        self.hint2 = "Sheriff candidate."
+                        self.hint2 = "Nominated."
         #update the screen
         pygame.display.flip()
         

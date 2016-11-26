@@ -14,10 +14,10 @@ class ClientChannel(Channel):
     def Network_Launch(self, data):
         name = data['player_name']
         self._server.Start_Game(name)
-    def Network_Run_Sheriff(self, data): 
+    def Network_Nominate(self, data): 
         print data
         name = data['player_name']
-        self._server.Run_Sheriff(name)
+        self._server.Nominate(name)
         
 class WolvesServer(Server):
     channelClass = ClientChannel
@@ -38,7 +38,6 @@ class WolvesServer(Server):
         for channel in self.game.player_channel:
             channel.Send({'action': 'reg', 'player_names': self.game.player_name})
     def Start_Game(self, name):
-        print '***', name, 'voted launch!***'
         if (name == self.game.admin) and not self.game.start_game:
             self.game.start_game = True
             roles = self.game.roles[:]
@@ -48,14 +47,14 @@ class WolvesServer(Server):
             self.timer_last = 15
             self.timer_channel = self.game.player_channel
             role_id = 0
+            #send the roles to players
             for channel in self.game.player_channel:
                 channel.Send({'action': 'Start_Game', 'role': roles[role_id], 'timer': self.timer_last})
                 role_id += 1
     def Nominate(self, name):
-        print '***', name, 'run for sheriff!***'
         self.game.candidate[name] = 0
         for channel in self.game.player_channel:
-            channel.Send({'action': 'Candidate', 'name': name})
+            channel.Send({'action': 'Nominate', 'name': name})
     #a timer, deactivate the launch button in specified channels when time is up    
     def Timer(self): #last_time in secs #if self.start_time is NA, means the timer is not started
         if self.start_time != 'NA': 
