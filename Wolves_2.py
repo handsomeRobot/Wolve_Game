@@ -170,11 +170,9 @@ class WolfGame(ConnectionListener):
         if self.role == 'Wolf'：
             self.send({'action': "Wolf_Collect", "sender": self.name})
         self.hint1 = "You are " + self.role
-        self.hint2 = "Night."
-        self.day_time = "night"
         
     def Network_Wolf_Collect(self, data):
-        #print out wolf collegues
+        #print out wolf companies
         if self.role == 'Wolf':
             self.hint2 = self.hint2 + " with " + data['wolf'].remove(self.name)
     
@@ -183,12 +181,6 @@ class WolfGame(ConnectionListener):
         self.choice = False
         self.nominating = False 
         self.voting = False
-    
-    def Network_Test(self, data):
-        print "\n=============================================================================="
-        print "Communication channel is clear."
-        print datetime.datetime.now()
-        print "===============================================================================\n"
 
     #for sheriff
     def Network_Sheriff(self, data):
@@ -230,36 +222,32 @@ class WolfGame(ConnectionListener):
             self.hint2 = "Raise for Sheriff now."
             self.background = self.gun_badge_background
 
-    #for night action 
+    #enter night/wake up upon calling from the server
     def Network_Night_Action(self, data):
         print "\n================================================================"
-        print "NIGHT_ACTION\n"
+        print "In NIGHT_ACTION\n"
         print "Received from server: ", data
         print datetime.datetime.now()
         print "==================================================================\n"
         if not self.dead:
             self.background = self.night_background
+            detail = data['detail']
+            if detail == 'enter_night': #enter night
+                self.hint2 = "Night."
+                self.day_time = "night"
+            elif detail == 'wake_up' and self.role == data['role']: #waked up
+                self.hint2 = "Please action."
+                self.night_activative = True
+                try:
+                    self.weapon_restrict = data['weapon_restrict'][self.role]
+                except KeyError: 
+                    pass
+                try:
+                    self.target_restrict = data['target_restrict'][self.role]
+                except KeyError:
+                    pass
         elif self.dead:
             self.background = self.night_black-white_background
-        nc_role = data["role"]
-        self.hint2 = "Bloody Night."
-        #?????????????????????????????????????????????????
-        if "id" not in data.keys() and self.role == nc_role: #my turn
-            self.hint2 = "Please action."
-            self.night_activative = True
-            try:
-                self.weapon_restrict = data['weapon_restrict'][self.role]
-            except KeyError: 
-                pass
-            try:
-                self.target_restrict = data['target_restrict'][self.role]
-            except KeyError:
-                pass
-        elif "id" in data.keys() and self.role == nc_role:
-            nc_id = data["id"]
-            name = data["name"]
-            if nc_id:
-                self.wolf_name_ls.append(name)
 
     def Network_Day_Action(self, data):
         death_list = data["name"]

@@ -78,7 +78,7 @@ class Wolves_Server(Server):
                 role_id += 1
             #start night
             self.Night_Kindle()
-    def Wolf_Collect(self, name):
+    def Wolf_Collect(self, name): #record the wolve_player based on info from distributed players
         self.game.wolf_collect_ls.append(name)
         for channel in self.game.player_channel_ls:
             channel.Send({'action': "Wolf_Collect", 'wolf': self.game.wolf_collect_ls})
@@ -123,24 +123,22 @@ class Wolves_Server(Server):
                         self.game.candidate_dict[winner] = 0
                     for channel in self.game.player_channel_ls:
                         channel.Send({"action": "Sheriff", "status": "vote", "name": winners, "again": True}) 
-    def Night_Kindle(self):
-        print "\n============================================================="
-        print "Start Night_Kindle."
-        print datetime.datetime.now()
-        print "===============================================================\n"
-        role = self.game.role_base_ls[self.game.role_base_ls_Index]
-        target_restrict = self.game.target_restrict_dict
-        weapon_restrict = self.game.weapon_restrict_dict
-        if role in self.game.role_ls:
+    def Night_Action(self, target, role, weapon, sender): #enter the night/distribute tasks/collect responses
+        if self.game.day_time != 'night': #enter the night if not night
+            print "\n============================================================="
+            print "Start Night_Action."
+            print datetime.datetime.now()
+            print "===============================================================\n"
+            self.game.day_time = 'night'
             for channel in self.game.player_channel_ls:
-                channel.Send({"action": "Night_Action", "role": role, "target_restrict": target_restrict, "weapon_restrict": weapon_restrict})
-                print "\n============================================================="
-                print "Sent to channel: " + str(channel) + " ", {"action": "Night_Action", "role": role, "target_restrict": target_restrict, "weapon_restrict": weapon_restrict}
-                print datetime.datetime.now()
-                print "===============================================================\n"
-        elif role not in self.game.role_ls:
-            self.Night_Action("NA", "NA", "NA", "NA")
-    def Night_Action(self, name, role, weapon, sender):
+                channel.send({'action': 'Night_Action', 'detail': 'enter_night'})
+        while True: #wake up individuals and collect their responses
+            role = self.game.role_base_ls[self.game.role_base_ls_Index]
+            target_restrict = self.game.target_restrict_dict
+            weapon_restrict = self.game.weapon_restrict_dict
+            if role in self.game.role_ls:
+                for channel in self.game.player_channel_ls:
+                    channel.Send({"action": "Night_Action", 'detail': 'wake_up', "role": role, "target_restrict": target_restrict, "weapon_restrict": weapon_restrict})
         if name in self.game.player_name_ls and sender in self.game.player_name_ls:
             if role == "Wolf":
                 self.game.player_id_dict[sender] = "Wolf"
