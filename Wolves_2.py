@@ -246,6 +246,8 @@ class WolfGame(ConnectionListener):
                     self.target_restrict = data['target_restrict'][self.role]
                 except KeyError:
                     pass
+			elif detail == 'check':
+				
         elif self.dead:
             self.background = self.night_black-white_background
 

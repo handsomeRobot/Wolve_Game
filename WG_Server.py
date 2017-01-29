@@ -129,50 +129,48 @@ class Wolves_Server(Server):
             print "Start Night_Action."
             print datetime.datetime.now()
             print "===============================================================\n"
+			sender = 'NA'
             self.game.day_time = 'night'
             for channel in self.game.player_channel_ls:
                 channel.send({'action': 'Night_Action', 'detail': 'enter_night'})
-        while True: #wake up individuals and collect their responses
-            role = self.game.role_base_ls[self.game.role_base_ls_Index]
-            target_restrict = self.game.target_restrict_dict
-            weapon_restrict = self.game.weapon_restrict_dict
-            if role in self.game.role_ls:
-                for channel in self.game.player_channel_ls:
-                    channel.Send({"action": "Night_Action", 'detail': 'wake_up', "role": role, "target_restrict": target_restrict, "weapon_restrict": weapon_restrict})
-        if name in self.game.player_name_ls and sender in self.game.player_name_ls:
+        if sender == 'NA': #wake up individuals and collect their responses
+			role = self.game.role_base_ls[self.game.role_base_ls_Index]
+			target_restrict = self.game.target_restrict_dict
+			weapon_restrict = self.game.weapon_restrict_dict
+			if role in self.game.role_ls:
+				for channel in self.game.player_channel_ls:
+					channel.Send({"action": "Night_Action", 'detail': 'wake_up', "role": role, "target_restrict": target_restrict, "weapon_restrict": weapon_restrict})
+        if sender != 'NA': #collect response from the activated player
             if role == "Wolf":
                 self.game.player_id_dict[sender] = "Wolf"
-                self.game.night_event_dict[name] = "attacked"
+                self.game.night_event_dict[target] = "attacked"
                 print "\n==================================================================================="
-                print name + " is attacked by Wolf " + sender
+                print target + " is attacked by Wolf " + sender
                 print datetime.datetime.now()
                 print "====================================================================================\n"
             elif role == "Witch":
                 self.game.player_id_dict[sender] = "Witch"
                 if weapon == "Med":
-                    if name in self.game.night_event_dict.keys() and self.game.night_event_dict[name] == "attacked":
-                        del self.game.night_event_dict[name]
+                    if target in self.game.night_event_dict.keys() and self.game.night_event_dict[target] == "attacked":
+                        del self.game.night_event_dict[target]
                         print "\n==================================================================================="
-                        print name + " is cured by Witch " + sender
+                        print target + " is cured by Witch " + sender
                         print datetime.datetime.now()
                         print "====================================================================================\n"
-                    elif name not in self.game.night_event_dict.keys() or self.game.night_event_dict[name] != "attacked":
-                        pass
                     self.game.weapon_restrict_dict[role] = ["Med"]
                 elif weapon == "Toc":
-                    self.game.night_event_dict[name] == "killed"
+                    self.game.night_event_dict[target] == "killed"
                     print "\n==================================================================================="
-                    print name + " is tocxided by Witch " + sender
+                    print target + " is tocxided by Witch " + sender
                     print datetime.datetime.now()
                     print "====================================================================================\n"
                     self.game.weapon_restrict_dict[role] == ["Toc"]
             elif role == "Prophet":
                 self.game.player_id_dict[sender] = "Prophet"
                 for channel in self.game.player_channel_ls:
-                    channel.Send({"action": "Night_Kindle", "name": name, "id": self.game.player_id_dict[name] == "Wolf", \
-                    "role": "Prophet"})
+                    channel.Send({"action": "Night_Action", 'detail': 'check', "name": target, "bad_id": target in self.game.wolf_collect_ls, "role": "Prophet"})
                 print "\n========================================================================================="
-                print self.game.player_id_dict[name] + " " + name + " is checked by Prophet " + sender
+                print self.game.player_id_dict[target] + " " + target + " is checked by Prophet " + sender
                 print datetime.datetime.now()
                 print "===========================================================================================\n"
         if self.game.role_base_ls_Index + 1 < len(self.game.role_base_ls):
